@@ -11,7 +11,8 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## 6.1
+## 6.1  
+Question 6.1 asks to compute a Monte Carlo estimate of $\int_{0}^{\pi/3}sin(t)dt$
 
 ```{r}
 m <- 10000
@@ -22,7 +23,8 @@ theta <- -cos(pi/3) - (-1)
 
 With $\theta=0.5$ and $\hat{\theta}=$ `r theta_hat`, our estimate is `r round(100*(1-(theta_hat/theta)),2)`% off from the true value.
 
-## 6.3
+## 6.3  
+Question 6.3 asks to compute Monte Carlo estimate of $\int_{0}^{0.5}e^{-x}dx$ by first using the Uniform distribution (where the estimate is denoted $\hat\theta$) and then using the exponential distribution ($\hat{\theta^\star}$). Afterwards, we compare the variances to see which is a better estimator.
 
 ```{r}
 theta_hat_sampler <- replicate(1000, expr = {
@@ -44,7 +46,9 @@ $Var(\hat{\theta^\star}) = \frac{(1-e^{-0.5})(e^{-0.5})}{m} \approx \frac{0.2386
 $\frac{Var(\hat{\theta})}{Var(\hat{\theta^\star})}=\frac{0.013}{4*0.2386}<1$  
 The ratio is less than one, thus $\hat{\theta}$ is a more efficient estimator.  
 
-## 6.4
+## 6.4  
+Question 6.4 asks to write a function to compute a Monte Carlo estimate of the Beta(3, 3) cdf, and use
+the function to estimate F(x) for x = 0.1, 0.2,..., 0.9.  
 
 ```{r}
 estimates <- c()
@@ -66,6 +70,7 @@ round(rbind(values, true_prob, estimates, percent_error), 4)
 Our estimates seem reasonably close to the true probability.
 
 ## 6.13
+6.13 asks to find two functions to estimate $\int_{1}^{\infty}\frac{x^2}{\sqrt{2\pi}}e^{-x^2}dx$, then to compare the functions to find the better estimator.  
 
 The two functions we will look at are the exponential distribution, and the gamma distribution (both shifted by 1 in order to match the support). Comparing those to the given function:
 
@@ -91,8 +96,8 @@ legend("topright", legend = c("exponential", "gamma"), lty = c(1,2))
 ```
 It seems the modified exponential function would be the better fit, since the importance function seems more "constant".  
 
-## 6.14
-
+## 6.14  
+6.14 asks to find the estimate of the integral referenced in 6.13  
 Using the modified exponential distribution to sample:
 ```{r}
 x <- rexp(10000) + 1
