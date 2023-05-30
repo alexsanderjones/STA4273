@@ -1,0 +1,169 @@
+---
+title: "STA4273 HW1"
+author: "Alex Jones"
+date: "2023-01-29"
+output:
+  pdf_document: default
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+## Question 3.2
+
+Using the CDF of the Standard Laplace distribution, which is:
+
+$F_X(x)={\displaystyle {\begin{cases}{\frac {1}{2}}\exp \left({x}\right)&{\text{if }}x< 0 \\[8pt]1-{\frac {1}{2}}\exp \left(-{x }\right)&{\text{if }}x\geq 0 \end{cases}}}$
+
+We find $F^{-1}_X(u)$ to be:
+
+$F^{-1}_X(u)={\displaystyle {\begin{cases}ln(2u)&{\text{if }}u< 0.5 \\[8pt]-ln(2-2u)&{\text{if }}0.5\leq u< 1 \end{cases}}}$
+
+Then, using the following code to perform the Inverse Transform Method:
+
+```{r}
+n <- 1000
+u <- runif(n)
+q1_function <- function(x) {
+  for (i in 1:length(x)){
+    if (x[i] < 0.5) {
+     x[i] <- log(2*x[i])
+    }
+    else {
+     x[i] <- -log(2*(1-x[i]))
+    }
+  }  
+  return(x)
+}
+
+x <- q1_function(u)
+```
+
+Our sample of n = 1000 is generated. Then, plotting it as a histogram with the Laplace p.d.f overlaid, the following graph is produced:
+
+```{r, out.height= "25%"}
+y <- seq(min(x), max(x), length = 100)
+hist(x, prob = TRUE, breaks = "Scott")
+lines(y, 0.5*exp(-abs(y)))
+```
+
+It seems that the randomly generated variables follow the target distribution.
+
+## Question 3.4
+
+Finding the integral of the given p.d.f, we find the cumulative distribution function to be:
+
+$F_X(x)=1-e^{-x^2/2\sigma^2}$ for $x\geq0$, $\sigma>0$.
+
+With this, we find the inverse function
+
+$F^{-1}_X(u)=\sigma\sqrt{-2ln(1-u)}$ for $0< u <1$.
+
+To test this, we will use three different values for $\sigma$: 0.5, 1, and 10. Constructing the histograms and overlaying the appropriate Raleigh distributions:
+
+```{r, out.height = "25%"}
+q2_function <- function(sigma) {
+  u <- runif(10000)
+  x <- sigma*sqrt(-2*log(1-u))
+  hist(x, breaks = "Scott", prob = TRUE, main = paste("sigma = ", sigma))
+  y <- seq(min(x), max(x), length = 50)
+  lines(y, ((y/(sigma^2))*exp(-y^2/(2*sigma^2))))
+}
+sigma <- 0.5
+q2_function(sigma)
+```
+
+```{r, out.height = "25%"}
+sigma <- 1
+q2_function(sigma)
+```
+
+```{r, out.height = "25%"}
+sigma <- 10
+q2_function(sigma)
+```
+
+We find that the inverse transform method of generating random samples appears to fit well with the Rayleigh Distribution. Observing the modes, the mode of the generated samples appears to be at each level of $\sigma$, matching our target distribution.
+
+## Question 3.5
+
+With the given p.m.f, we can find that $F^{-1}_X(u)$ to be:
+
+$F^{-1}_X(u)={\displaystyle {\begin{cases}0&\text{if } u<0.1 \\ 1 &\text{if }0.1\leq u<0.3 \\ 2 &\text{if } 0.3\leq x<0.5 \\ 3 & \text{if } 0.5\leq u<0.7 \\ 4 &\text{if } 0.7\leq u\end{cases}}}$
+
+For $0< u <1$. Coding this into R and generating a random sample:
+
+```{r}
+q3_function <- function(x) {
+  for (i in 1:length(x)) {
+    if (x[i] < 0.1) {x[i] <- 0}
+    else if (x[i] < 0.3) {x[i] <- 1}
+    else if (x[i] < 0.5) {x[i] <- 2}
+    else if (x[i] < 0.7) {x[i] <- 3}
+    else {x[i] <- 4}
+  }
+  return(x)
+}
+
+x <- q3_function(u)
+table(x)/length(x)
+```
+
+The inverse transform model seems to fit well. Using the "sample" function:
+
+```{r}
+p = c(0.1,0.2,0.2,0.2,0.3)
+y <- sample(0:4,1000,replace = TRUE, prob = p)
+table(y)/length(y)
+```
+
+The sampling method also works well.
+
+## Question 3.6
+
+Using the proof from Lecture 5, theorem 2:
+
+$h(y\mid A=1) = \frac{h(y,A=1)}{Pr(A=1)}$ where $h(y\mid A=1)$ indicates the conditional density of the accepted samples.
+
+$=\frac{g(y)Pr(A=1\mid y)}{Pr(A=1)}$
+
+$=\frac{g(y)\frac{f(y)}{cg(y)}}{1/c}$
+
+$=f(y)$
+
+## Question 3.11
+
+To construct a mixture with $p_1=0.75$ and $p_2=0.25$, we will randomly sample from the uniform distribution. If the generated value is less than or equal to 0.75, we will randomly generate a variable from the $N(0,1)$ distribution, otherwise we will generate a variable from the $N(3,1)$ distribution.
+
+```{r, out.height = "25%"}
+mixture_generator <- function(n, p1) {
+  y <- runif(n)
+  for (i in 1:n) {
+    if (y[i] <= p1) {
+      y[i] <- rnorm(1)
+    }
+    else{
+      y[i] <- rnorm(1,3,1)
+    }
+  }
+  hist(y, breaks = "Scott", prob=TRUE, main = paste("p_1 = ", p1))
+}
+mixture_generator(1000, 0.75)
+```
+
+Testing different values for $p_1$ and $p_2$:
+
+```{r, out.height = "25%"}
+mixture_generator(1000, 0.6)
+mixture_generator(1000, 0.5)
+```
+
+It follows that as $p_1$ approaches 0.5, the distribution becomes more bimodal.
+
+## Question 3.12
+
+```{r, out.height = "25%"}
+gam <- rgamma(1000, 4, 2)
+expo <- rexp(1000, gam)
+hist(expo, prob=TRUE, breaks = "Scott")
+```

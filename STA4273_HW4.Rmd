@@ -1,0 +1,122 @@
+---
+title: "STA4273_HW4"
+author: "Alex Jones"
+date: "2023-04-23"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 9.6
+
+Using the Metropolis-Hastings random walk sampler with the proposal distribution being uniform:
+```{r}
+groups <- c(125,18,20,34)
+w <- 0.1
+n <- 20000
+x <- numeric(n)
+burn <- 5000
+
+prop <- function(a) {
+  if (a > 0 && a < 1) {
+    (2+a)^groups[1]*(1-a)^(groups[2]+groups[3])*a^groups[4]
+  }
+  else 0
+}
+
+x[1] <- runif(1,0,1)
+u <- runif(n)
+v <- runif(n, -w,w)
+
+for (i in 2:n) {
+  y <- x[i - 1] + v[i]
+  if (u[i] <= prop(y)/prop(x[i-1])) {
+    x[i] <- y
+  }
+  else {
+    x[i] <- x[i-1]
+  }
+}
+
+x_burned <- x[(burn+1):n]
+theta <- mean(x_burned)
+theta
+p <- c(0.5+theta/4, (1-theta)/4, (1-theta)/4, theta/4)
+
+p * sum(groups)
+
+hist(x_burned, prob = TRUE, breaks = "Scott")
+```
+It seems our generated distribution aligns with both the sample and the target distribution.  
+
+## Question 9.7
+
+Using the Gibbs Sampler (something to note: usually there's different $\mu$ and $\sigma$ for each variate, but since they come from identical distributions I only made one variable for both of them).  
+
+```{r}
+n <- 12000
+burn <- 2000
+X <- matrix(0,n,2)
+rho <- 0.9
+mu <- 0
+sigma <- 1
+s <- sqrt(1-rho^2)
+
+for (i in 2:n) {
+  x2 <- X[i-1,2]
+  m1 <- mu + rho * (x2-mu)
+  X[i,1] <- rnorm(1,m1,s)
+  x1 <- X[i,1]
+  m2 <- mu + rho * (x1-mu)
+  X[i,2] <- rnorm(1,m2,s)
+}
+
+x <- X[(burn+1):n, 1]
+y <- X[(burn+1):n, 2]
+model <- lm(y~x)
+summary(model)
+```
+As noted in the summary output, $R^2$ is approximately 0.8, which corresponds to $R\approx0.9$, matching what we needed. Looking at the plot of the residuals and the qqline:  
+
+```{r}
+plot(model$res)
+qqnorm(model$res)
+qqline(model$res, cex = 0.25)
+```
+
+The constant variance/normality condition seems to be satisfied.
+
+## Question 9.8
+
+For the purposes of this problem, we will set $a=4$, $b=5$ and $n=20$.
+
+```{r}
+size <- 11000
+burn <- 1000
+a <- 4
+b <- 5
+n <- 20
+
+x <- y <- rep(0,n)
+x[1] <- rbinom(1, n, 0.5)
+y[1] <- rbeta(1, x[1] + a, n-x[1]+b)
+
+for (i in 2:size) {
+  x[i] <- rbinom(1, n, y[i-1])
+  y[i] <- rbeta(1, x[i]+a, n-x[i]+b)
+}
+
+x_burned <- x[(burn+1):size]
+y_burned <- y[(burn+1):size]
+table <- table(x_burned)/length(x_burned)
+```
+Looking at the computed marginal probability distribution $f(x|y)$:  
+
+```{r}
+hist(x_burned, prob = TRUE)
+```
+

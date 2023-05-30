@@ -1,0 +1,101 @@
+---
+title: "STA4273 HW 2"
+author: "Alex Jones"
+date: "2023-02-13"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 6.1
+
+```{r}
+m <- 10000
+x <- runif(m, 0, pi/3)
+theta_hat <- (pi/3)*(mean(sin(x)))
+theta <- -cos(pi/3) - (-1)
+```
+
+With $\theta=0.5$ and $\hat{\theta}=$ `r theta_hat`, our estimate is `r round(100*(1-(theta_hat/theta)),2)`% off from the true value.
+
+## 6.3
+
+```{r}
+theta_hat_sampler <- replicate(1000, expr = {
+  x <- runif(m, 0, 0.5)
+  theta_hat <- 0.5*mean(exp(-x))
+})
+
+theta_star_sampler <- replicate(1000, expr = {
+  g <- rexp(m)
+  theta_star <- mean(g <= 0.5)
+})
+var(theta_hat_sampler)
+var(theta_star_sampler)
+```
+It appears that $\hat{\theta}$ has a smaller variance than $\hat{\theta^\star}$. Verifying this mathematically:  
+  
+$Var(\hat{\theta}) = \frac{1}{4m}(\int_{0}^{0.5}2e^{-2u}du - (\int_{0}^{0.5}2e^{-u}du)^2) \approx \frac{0.013}{4m}$  
+$Var(\hat{\theta^\star}) = \frac{(1-e^{-0.5})(e^{-0.5})}{m} \approx \frac{0.2386}{m}$  
+$\frac{Var(\hat{\theta})}{Var(\hat{\theta^\star})}=\frac{0.013}{4*0.2386}<1$  
+The ratio is less than one, thus $\hat{\theta}$ is a more efficient estimator.  
+
+## 6.4
+
+```{r}
+estimates <- c()
+true_prob <- c()
+values <- seq(0.1,0.9, 0.1)
+cdf_computer <- function(n, p) {
+  x <- runif(n, min = 0, max = p)
+  ### the function inside mean() is a simplified form of the beta(3,3) pdf
+  p*mean((x^2*(1-x)^2*30))
+}
+
+for (i in values) {
+  estimates <- append(estimates, cdf_computer(100000, i))
+  true_prob <- append(true_prob, pbeta(i, 3,3))
+} 
+percent_error <- 100*(estimates - true_prob)/true_prob
+round(rbind(values, true_prob, estimates, percent_error), 4)
+```
+Our estimates seem reasonably close to the true probability.
+
+## 6.13
+
+The two functions we will look at are the exponential distribution, and the gamma distribution (both shifted by 1 in order to match the support). Comparing those to the given function:
+
+```{r}
+
+x <- seq(1,7,0.01)
+y <- x^2 * exp(-x^2/2)/sqrt(2*pi)
+yexp <- dexp(x-1)
+ygam <- dgamma(x-1, 3/2, 1)
+plot(x,y, type = "l", ylim = c(0,1.25))
+lines(x, yexp, lty = 2)
+lines(x, ygam, lty = 3)
+legend("topright", legend = c("g(x)","exponential","gamma"), lty = 1:3)
+
+```
+Then creating functions to compare the ratios to minimize errors:
+```{r}
+expratio <- y/yexp
+gamratio <- y/ygam
+plot(x, expratio, type = "l", ylim = c(0,1), ylab = "ratio")
+lines(x, gamratio, lty = 2)
+legend("topright", legend = c("exponential", "gamma"), lty = c(1,2))
+```
+It seems the modified exponential function would be the better fit, since the importance function seems more "constant".  
+
+## 6.14
+
+Using the modified exponential distribution to sample:
+```{r}
+x <- rexp(10000) + 1
+est <- mean((x^2 * exp(-x^2/2))/sqrt(2*pi)/dexp(x-1))
+```
+Our estimate for the integral is `r est`
