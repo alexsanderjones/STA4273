@@ -10,6 +10,7 @@ output:
 ---
 
 ## Question 3.2
+3.2 Asks to generate the standard Laplace distribution sampler using inverse transform method:  
 
 Using the CDF of the Standard Laplace distribution, which is:
 
@@ -49,7 +50,8 @@ lines(y, 0.5*exp(-abs(y)))
 
 It seems that the randomly generated variables follow the target distribution.
 
-## Question 3.4
+## Question 3.4  
+Question 3.4 asks to build a Rayleigh Distribution sampler for any given $\sigma$:  
 
 Finding the integral of the given p.d.f, we find the cumulative distribution function to be:
 
@@ -85,7 +87,8 @@ q2_function(sigma)
 
 We find that the inverse transform method of generating random samples appears to fit well with the Rayleigh Distribution. Observing the modes, the mode of the generated samples appears to be at each level of $\sigma$, matching our target distribution.
 
-## Question 3.5
+## Question 3.5  
+Question 3.5 asks to generate a sample from a probability mass function:  
 
 With the given p.m.f, we can find that $F^{-1}_X(u)$ to be:
 
@@ -119,7 +122,8 @@ table(y)/length(y)
 
 The sampling method also works well.
 
-## Question 3.6
+## Question 3.6  
+Question 3.6 is a proof describing why the accepted variates from the rejection-sampling method follows the target distribution.  
 
 Using the proof from Lecture 5, theorem 2:
 
@@ -132,6 +136,7 @@ $=\frac{g(y)\frac{f(y)}{cg(y)}}{1/c}$
 $=f(y)$
 
 ## Question 3.11
+Question 3.11 asks to make a sampler for a mixed distribution of two normals with varying weights.  
 
 To construct a mixture with $p_1=0.75$ and $p_2=0.25$, we will randomly sample from the uniform distribution. If the generated value is less than or equal to 0.75, we will randomly generate a variable from the $N(0,1)$ distribution, otherwise we will generate a variable from the $N(3,1)$ distribution.
 
@@ -161,6 +166,7 @@ mixture_generator(1000, 0.5)
 It follows that as $p_1$ approaches 0.5, the distribution becomes more bimodal.
 
 ## Question 3.12
+Question 3.12 asks to simulate an exponential-gamma mixture.  
 
 ```{r, out.height = "25%"}
 gam <- rgamma(1000, 4, 2)
